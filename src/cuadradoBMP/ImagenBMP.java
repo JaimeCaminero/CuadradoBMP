@@ -28,8 +28,8 @@ public class ImagenBMP {
 		this.nombre = nombre;
 		this.dimensionesImagen = dimensionesImagen;
 		this.tamCuadrado = tamCuadrado;
-		this.colorFondo = colorFondo;
-		this.colorCuadrado = colorCuadrado;
+		this.colorFondo = colorFondo.clone();
+		this.colorCuadrado = colorCuadrado.clone();
 		tamImagen = (byte) (TAM_FILA * this.dimensionesImagen);
 		tamFichero = (byte) (CABECERA_POR_DEFECTO + tamImagen);
 	}
@@ -46,8 +46,8 @@ public class ImagenBMP {
 				0, 0, 0, 0,
 				54, 0, 0, 0,
 				40, 0, 0, 0,
-				dimensionesImagen, 0 , 0, 0,
-				dimensionesImagen, 0, 0, 0,
+				dimensionesImagen, 0 , 0, 0, // --> MIRAR CONVERSIÓN LITTLE-ENDIAN
+				dimensionesImagen, 0, 0, 0, // --> MIRAR CONVERSIÓN LITTLE-ENDIAN
 				1, 0,
 				24, 0,
 				0, 0, 0, 0,
