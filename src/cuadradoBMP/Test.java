@@ -1,19 +1,17 @@
 package cuadradoBMP;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+
+/**
+ * Clase para hacer pruebas
+ */
 
 public class Test {
 
 	private File fichero;
 	private FileInputStream lecturaFichero;
-	private BufferedReader lecturaBufer;
-	private FileOutputStream escrituraFichero;
-	private BufferedWriter escrituraBufer;
 	private final int comprobacionHeader = 54;
 
 	public Test(String ruta) {
@@ -37,6 +35,10 @@ public class Test {
 		for (int i = 0; i < arrayBytes.length; i++) {
 			System.out.println(i + ": " + arrayBytes[i]);
 		}
+	}
+	
+	public void cerrarRecursos() throws IOException {
+		lecturaFichero.close();
 	}
 
 }

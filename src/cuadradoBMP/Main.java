@@ -11,6 +11,7 @@ public class Main {
 		try {
 			test.crearFichero();
 			test.leerFicheroByte();
+			test.cerrarRecursos();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
