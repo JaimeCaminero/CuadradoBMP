@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Scanner;
 
 public class ImagenBMP {
 	// Atributos que nos pasa el usuario
@@ -88,23 +89,12 @@ public class ImagenBMP {
 	// algunos valores que son necesarios (para saber las dimensiones del fichero)
 	private byte[] crearImagenInicial() {
 
-		byte[] defecto = {
-				66, 77,
-				0, 0, 0, 0, // --> MIRAR CONVERSIÓN LITTLE-ENDIAN --> endianTamFichero
-				0, 0, 0, 0,
-				54, 0, 0, 0,
-				40, 0, 0, 0,
+		byte[] defecto = { 66, 77, 0, 0, 0, 0, // --> MIRAR CONVERSIÓN LITTLE-ENDIAN --> endianTamFichero
+				0, 0, 0, 0, 54, 0, 0, 0, 40, 0, 0, 0, 0, 0, 0, 0, // --> MIRAR CONVERSIÓN LITTLE-ENDIAN -->
+																	// endianDimensionesImangenes
 				0, 0, 0, 0, // --> MIRAR CONVERSIÓN LITTLE-ENDIAN --> endianDimensionesImangenes
-				0, 0, 0, 0, // --> MIRAR CONVERSIÓN LITTLE-ENDIAN --> endianDimensionesImangenes
-				1, 0,
-				24, 0,
-				0, 0, 0, 0,
-				0, 0, 0, 0, // --> MIRAR CONVERSIÓN LITTLE-ENDIAN --> endianTamImagen
-				0, 0, 0, 0,
-				0, 0, 0, 0,
-				0, 0, 0, 0,
-				0, 0, 0, 0
-		};
+				1, 0, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, // --> MIRAR CONVERSIÓN LITTLE-ENDIAN --> endianTamImagen
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 		int contadorSubIndice = 0;
 		for (int i = 0; i < defecto.length; i++) {
@@ -173,6 +163,39 @@ public class ImagenBMP {
 		conversor.putInt(dato);
 		// 4. Como resultado da el array indicado
 		return conversor.array();
+	}
+
+	private byte[] pedirColoresRGB() {
+		Scanner sc = new Scanner(System.in);
+		byte[] colores = new byte[3];
+
+		try {
+			System.out.println("Indica el color de la figura en formato RGB:");
+			System.out.print("R(0-255): ");
+			int r = sc.nextInt();
+			System.out.print("G(0-255): ");
+			int g = sc.nextInt();
+			System.out.print("B(0-255): ");
+			int b = sc.nextInt();
+			
+			if ( r > 255 || r < 0 || b > 255 || b < 0 || g > 255 || g < 0 ) {
+				throw new IllegalArgumentException("Los valores no están en los rangos correctos");
+			}
+
+			colores[0] = (byte) b;
+			colores[1] = (byte) g;
+			colores[2] = (byte) r;
+
+		} catch (Exception e) {
+			System.out.println("Error, el formato no es correcto " + e.getMessage());
+			System.err.println("Se va a usar un color por defecto (ESTO SE DEBE CAMBIAR)");
+			colores[0] = 0;
+			colores[1] = 0;
+			colores[2] = 0;
+		}
+		
+		return colores;
+
 	}
 
 }
