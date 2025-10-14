@@ -9,8 +9,9 @@ public class Main {
 		String ruta = "cuadrado.bmp";
 		Test test = new Test(ruta);
 		try {
-		ImagenBMP imagen = new ImagenBMP("pruebaImagenDefecto", (byte) 50, (byte) 50);
+		ImagenBMP imagen = new ImagenBMP("pruebaImagenDefecto", 5, 5);
 		imagen.crearFicherBMP();
+		imagen.cerrarRecursos();
 //			test.crearFichero();
 //			test.leerFicheroByte();
 //			test.cerrarRecursos();
