@@ -28,7 +28,7 @@ public class Test {
 
 	public void leerFicheroByte() throws IOException {
 		int tam = (int) fichero.length();
-		byte[] arrayBytes = new byte[tam];
+		byte[] arrayBytes = new byte[comprobacionHeader];
 		System.out.println("Tamaño fichero: " + tam + " bytes");
 		lecturaFichero = new FileInputStream(fichero);
 		lecturaFichero.read(arrayBytes);

@@ -9,6 +9,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 
 public class ImagenBMP {
 	private String nombre;
@@ -31,7 +32,7 @@ public class ImagenBMP {
 	private byte[] imagenPorDefecto;
 	
 	private final byte CABECERA_POR_DEFECTO = 54;
-	private final byte TAM_FILA = (byte) (((3 * dimensionesImagen + 3) / 4) * 4);
+	private final byte TAM_FILA;
 	
 	
 	private File fichero;
@@ -47,7 +48,7 @@ public class ImagenBMP {
 		this.dimensionesCuadrado = dimensionesCuadrado;
 //		this.colorFondo = colorFondo.clone();
 //		this.colorCuadrado = colorCuadrado.clone();
-		
+		TAM_FILA = (byte) (((3 * dimensionesImagen + 3) / 4) * 4);
 		endianDimensionesImagen = littleEndian(this.dimensionesCuadrado).clone();
 		tamImagen = (byte) (TAM_FILA * this.dimensionesImagen);
 		endianTamImagen = littleEndian(tamImagen).clone();
@@ -59,12 +60,12 @@ public class ImagenBMP {
 	}
 	
 	public void crearFicherBMP () throws IOException {
-		if(!fichero.exists())
-			fichero.createNewFile();
-		ficheroEscritura = new FileOutputStream(fichero);
-		bufferEscritura = new BufferedOutputStream(bufferEscritura);
-		bufferEscritura.write(imagenPorDefecto);
-		System.out.println("Se ha creado con éxito");
+//		if(!fichero.exists())
+//			fichero.createNewFile();
+//		ficheroEscritura = new FileOutputStream(fichero);
+//		bufferEscritura = new BufferedOutputStream(bufferEscritura);
+//		bufferEscritura.write(imagenPorDefecto);
+//		System.out.println("Se ha creado con éxito");
 	}
 	
 	public void cerrarRecursos() throws IOException {
@@ -137,9 +138,11 @@ public class ImagenBMP {
 	}
 	
 	private byte[] littleEndian (int dato) {
+		System.out.println("Dato: " + dato);
 		ByteBuffer conversor = ByteBuffer.allocate(4);
 		conversor.order(ByteOrder.LITTLE_ENDIAN);
 		conversor.putInt(dato);
+		System.out.println("Array: " + Arrays.toString(conversor.array()));
 		return conversor.array();
 	}
 
