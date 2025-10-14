@@ -6,15 +6,14 @@ public class Main {
 
 	public static void main(String[] args) {
 		System.out.println("El cuadrado de la MUERTE");
+		// ESCRIBIR LAS ENTRADAS DE LOS USUARIOS Y HACER LAS COMPROBACIONES PERTINENTES,
+		// PARA LUEGO PASARLO POR EL CONSTRUCTOR DE LA IMAGEN
 		String ruta = "cuadrado.bmp";
 		Test test = new Test(ruta);
 		try {
-		ImagenBMP imagen = new ImagenBMP("pruebaImagenDefecto", 5, 5);
-		imagen.crearFicherBMP();
-		imagen.cerrarRecursos();
-//			test.crearFichero();
-//			test.leerFicheroByte();
-//			test.cerrarRecursos();
+			ImagenBMP imagen = new ImagenBMP("pruebaImagenDefecto", 50, 50);
+			imagen.crearFicherBMP();
+			imagen.cerrarRecursos();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
