@@ -9,9 +9,11 @@ public class Main {
 		String ruta = "cuadrado.bmp";
 		Test test = new Test(ruta);
 		try {
-			test.crearFichero();
-			test.leerFicheroByte();
-			test.cerrarRecursos();
+		ImagenBMP imagen = new ImagenBMP("pruebaImagenDefecto", (byte) 50, (byte) 50);
+		imagen.crearFicherBMP();
+//			test.crearFichero();
+//			test.leerFicheroByte();
+//			test.cerrarRecursos();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
