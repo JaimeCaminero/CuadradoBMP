@@ -165,7 +165,7 @@ public class ImagenBMP {
 		return conversor.array();
 	}
 
-	private byte[] pedirColoresRGB() {
+	public byte[] pedirColoresRGB() {
 		Scanner sc = new Scanner(System.in);
 		byte[] colores = new byte[3];
 
@@ -198,4 +198,24 @@ public class ImagenBMP {
 
 	}
 
+	public byte[] getColorFondo() {
+		return colorFondo;
+	}
+
+	public void setColorFondo(byte[] colorFondo) {
+		this.colorFondo = colorFondo;
+	}
+
+	public byte[] getColorCuadrado() {
+		return colorCuadrado;
+	}
+
+	public void setColorCuadrado(byte[] colorCuadrado) {
+		this.colorCuadrado = colorCuadrado;
+	}
+	
+	
+
 }
+
+
