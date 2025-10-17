@@ -12,6 +12,10 @@ public class Main {
 		Test test = new Test(ruta);
 		try {
 			ImagenBMP imagen = new ImagenBMP("pruebaImagenDefecto", 50, 50);
+			byte [] colorFondo = imagen.pedirColoresRGB();
+			byte [] colorCuadrado = imagen.pedirColoresRGB();
+			imagen.setColorFondo(colorFondo);
+			imagen.setColorCuadrado(colorCuadrado);
 			imagen.crearFicherBMP();
 			imagen.cerrarRecursos();
 		} catch (IOException e) {
