@@ -61,7 +61,7 @@ public class ImagenBMP {
 		tamFichero = CABECERA_POR_DEFECTO + tamImagen;
 		endianTamFichero = littleEndian(tamFichero).clone();
 		imagenPorDefecto = crearImagenInicial(); // Creamos la cabecera
-		crearImagen(); // Definimos el array que definirá la iamgen
+		//crearImagen(); // Definimos el array que definirá la iamgen
 		fichero = new File(this.nombre + ".bmp");
 	}
 
@@ -132,7 +132,7 @@ public class ImagenBMP {
 		return defecto.clone();
 	}
 
-	private void crearImagen() {
+	public void crearImagen() {
 		// QUITAR ESTOS SYSOS CUANDO SE TERMINE
 		System.out.println("bytesPadding: " + bytesPadding);
 		System.out.println("Dimension parcial: " + tamFila);
@@ -197,6 +197,8 @@ public class ImagenBMP {
 		return colores;
 
 	}
+	
+	
 
 	public byte[] getColorFondo() {
 		return colorFondo;

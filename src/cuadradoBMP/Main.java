@@ -16,6 +16,7 @@ public class Main {
 			byte [] colorCuadrado = imagen.pedirColoresRGB();
 			imagen.setColorFondo(colorFondo);
 			imagen.setColorCuadrado(colorCuadrado);
+			imagen.crearImagen();
 			imagen.crearFicherBMP();
 			imagen.cerrarRecursos();
 		} catch (IOException e) {
