@@ -77,9 +77,9 @@ public class ImagenBMP {
 		bufferEscritura.write(imagen);
 		// ESTE BUCLE ESTÁ HECHO PARA VER EL ARRAY QUE SE VA A INSCRIBIR DENTRO DEL
 		// ARCHIVO
-		// UTILIZARLO COMO GUÍA Y CUANDO SEA DEFINITIVO EL CÓDIGO, QUITARLO
-		for (int i = 0; i < imagen.length; i++)
-			System.out.println(i + ": " + imagen[i]);
+//		// UTILIZARLO COMO GUÍA Y CUANDO SEA DEFINITIVO EL CÓDIGO, QUITARLO
+//		for (int i = 0; i < imagen.length; i++)
+//			System.out.println(i + ": " + imagen[i]);
 		bufferEscritura.flush();
 		System.out.println("Se ha creado con éxito");
 	}
@@ -141,16 +141,44 @@ public class ImagenBMP {
 		System.out.println("bytesPadding: " + bytesPadding);
 		System.out.println("Dimension parcial: " + tamFila);
 		imagen = new byte[tamFichero];
-		for (int i = 0; i < imagen.length; i++) {
-			if (i < CABECERA_POR_DEFECTO) {
+
+		for (int i = 0; i < CABECERA_POR_DEFECTO; i++) {
+			// Por si imagenPorDefecto fuera más pequeño
+			if (i < imagenPorDefecto.length) {
 				imagen[i] = imagenPorDefecto[i];
-				// AÑADIR LOS COLORES SELECCIONADOS AQUÍ
-				// IMPLEMENTAR LA LÓGICA DEL CUADRADO INTERIOR AQUÍ
-			} else if (bytesPadding != 0
-					&& (((i - CABECERA_POR_DEFECTO + 1) % tamFila < bytesPadding) && (i - CABECERA_POR_DEFECTO != 0)))
+			} else {
+				imagen[i] = 0;
+			}
+		}
+
+		// Calculamos la posición del cuadrado interior
+		// Utilizamos Math.in() para asegurarnos de que el tamaño no sea mayor que la
+		// imagen y el max para evitar valores negativos insertados por el usuario
+		int size = Math.max(0, Math.min(dimensionesCuadrado, dimensionesImagen));
+		int inicio = (dimensionesImagen - size) / 2;
+		int end = inicio + size-1;
+
+		// REcorremos las filas y columnas. En el caso de los bmp se recorren de abajo a
+		// arriba.
+		for (int row = 0; row < dimensionesImagen; row++) {
+			int inicioFila = CABECERA_POR_DEFECTO + row * tamFila;
+			for (int col = 0; col < dimensionesImagen; col++) {
+				int inicioPixel = inicioFila + col * 3;
+				// Variable booleana para determinar si estamos dentro del cuadrado interior o
+				// no
+				boolean dentro = (col >= inicio && col <= end && row >= inicio && row <= end);
+				byte[] color = dentro ? colorCuadrado : colorFondo;
+				// Ordenamos el color en BGR aunque luego los pidamos RGB
+				imagen[inicioPixel] = color[0];
+				imagen[inicioPixel + 1] = color[1];
+				imagen[inicioPixel + 2] = color[2];
+			}
+			// Bytes de padding al final de la fila en caso de que haya
+			int inicioPadding = inicioFila + 3 * dimensionesImagen;
+			int paddingFinal = inicioFila + tamFila;
+			for (int i = inicioPadding; i < paddingFinal; i++) {
 				imagen[i] = (byte) 0;
-			else
-				imagen[i] = (byte) 255;
+			}
 		}
 	}
 

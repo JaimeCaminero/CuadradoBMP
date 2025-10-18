@@ -11,7 +11,7 @@ public class Main {
 		// ESCRIBIR LAS ENTRADAS DE LOS USUARIOS Y HACER LAS COMPROBACIONES PERTINENTES,
 		// PARA LUEGO PASARLO POR EL CONSTRUCTOR DE LA IMAGEN
 		String ruta = "cuadrado.bmp";
-		Test test = new Test(ruta);
+		//Test test = new Test(ruta);
 		try {
 			System.out.print("Dimensión de la imagen en px): ");
 			int dimensionesImagen = sc.nextInt();
