@@ -48,6 +48,10 @@ public class ImagenBMP {
 		this.nombre = nombre;
 		this.dimensionesImagen = dimensionesImagen;
 		this.dimensionesCuadrado = dimensionesCuadrado;
+		System.out.println("Indica el color de fondo para el .BMP:");
+		this.colorFondo = pedirColoresRGB();
+		System.out.println("Indica el color de LA figura para el .BMP:");
+		this.colorCuadrado = pedirColoresRGB();
 //		this.colorFondo = colorFondo.clone();
 //		this.colorCuadrado = colorCuadrado.clone();
 		// Las siguientes fórmulas están sacadas de internet investigando que, si el
@@ -61,7 +65,7 @@ public class ImagenBMP {
 		tamFichero = CABECERA_POR_DEFECTO + tamImagen;
 		endianTamFichero = littleEndian(tamFichero).clone();
 		imagenPorDefecto = crearImagenInicial(); // Creamos la cabecera
-		//crearImagen(); // Definimos el array que definirá la iamgen
+		// crearImagen(); // Definimos el array que definirá la iamgen
 		fichero = new File(this.nombre + ".bmp");
 	}
 
@@ -165,20 +169,20 @@ public class ImagenBMP {
 		return conversor.array();
 	}
 
-	public byte[] pedirColoresRGB() {
+	private byte[] pedirColoresRGB() {
 		Scanner sc = new Scanner(System.in);
 		byte[] colores = new byte[3];
 
 		try {
-			System.out.println("Indica el color de la figura en formato RGB:");
+			System.out.println("Indica el color en formato RGB:");
 			System.out.print("R(0-255): ");
 			int r = sc.nextInt();
 			System.out.print("G(0-255): ");
 			int g = sc.nextInt();
 			System.out.print("B(0-255): ");
 			int b = sc.nextInt();
-			
-			if ( r > 255 || r < 0 || b > 255 || b < 0 || g > 255 || g < 0 ) {
+
+			if (r > 255 || r < 0 || b > 255 || b < 0 || g > 255 || g < 0) {
 				throw new IllegalArgumentException("Los valores no están en los rangos correctos");
 			}
 
@@ -193,31 +197,9 @@ public class ImagenBMP {
 			colores[1] = 0;
 			colores[2] = 0;
 		}
-		
+
 		return colores;
 
 	}
-	
-	
-
-	public byte[] getColorFondo() {
-		return colorFondo;
-	}
-
-	public void setColorFondo(byte[] colorFondo) {
-		this.colorFondo = colorFondo;
-	}
-
-	public byte[] getColorCuadrado() {
-		return colorCuadrado;
-	}
-
-	public void setColorCuadrado(byte[] colorCuadrado) {
-		this.colorCuadrado = colorCuadrado;
-	}
-	
-	
 
 }
-
-
