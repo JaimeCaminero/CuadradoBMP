@@ -52,38 +52,39 @@ public class ImagenBMP {
 		this.colorFondo = pedirColoresRGB();
 		System.out.println("Indica el color de LA figura para el .BMP:");
 		this.colorCuadrado = pedirColoresRGB();
-//		this.colorFondo = colorFondo.clone();
-//		this.colorCuadrado = colorCuadrado.clone();
-		// Las siguientes fórmulas están sacadas de internet investigando que, si el
-		// tamaño de la fila NO es múltiplo de 4, se necesitarán añadir bytes extras
-		// como padding.
-		bytesPadding = (4 - (3 * this.dimensionesImagen % 4)) % 4;
-		tamFila = ((3 * this.dimensionesImagen + 3) / 4) * 4;
-		endianDimensionesImagen = littleEndian(this.dimensionesCuadrado).clone();
+		tamFila = (3 * dimensionesImagen + 3) & ~3;
+		bytesPadding = tamFila - 3 * dimensionesImagen;
+
+		// tamaños
 		tamImagen = tamFila * this.dimensionesImagen;
-		endianTamImagen = littleEndian(tamImagen).clone();
 		tamFichero = CABECERA_POR_DEFECTO + tamImagen;
-		endianTamFichero = littleEndian(tamFichero).clone();
-		imagenPorDefecto = crearImagenInicial(); // Creamos la cabecera
-		// crearImagen(); // Definimos el array que definirá la iamgen
+
+		// endian arrays
+		endianDimensionesImagen = littleEndian(this.dimensionesImagen);
+		endianTamImagen = littleEndian(tamImagen);
+		endianTamFichero = littleEndian(tamFichero);
+
+		// Llamamos al método para crear la estructura del BMP
+		imagenPorDefecto = crearImagenInicial();
+
+		// Creamos el fichero con la extensión .bmp
 		fichero = new File(this.nombre + ".bmp");
 	}
 
 	public void crearFicherBMP() throws IOException {
+		// Si no existe se crea el archivo
 		if (!fichero.exists())
 			fichero.createNewFile();
 		ficheroEscritura = new FileOutputStream(fichero);
+		// Creamos un bufferedoutputStream para mayor eficiencia al escribir mucho
+		// contenido. Escribimos y cerramos recursos
 		bufferEscritura = new BufferedOutputStream(ficheroEscritura);
 		bufferEscritura.write(imagen);
-		// ESTE BUCLE ESTÁ HECHO PARA VER EL ARRAY QUE SE VA A INSCRIBIR DENTRO DEL
-		// ARCHIVO
-//		// UTILIZARLO COMO GUÍA Y CUANDO SEA DEFINITIVO EL CÓDIGO, QUITARLO
-//		for (int i = 0; i < imagen.length; i++)
-//			System.out.println(i + ": " + imagen[i]);
-		bufferEscritura.flush();
+		cerrarRecursos();
 		System.out.println("Se ha creado con éxito");
 	}
 
+	// Creamos un método para cerrar los recursos
 	public void cerrarRecursos() throws IOException {
 		bufferEscritura.close();
 		ficheroEscritura.close();
@@ -100,46 +101,25 @@ public class ImagenBMP {
 				1, 0, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, // --> MIRAR CONVERSIÓN LITTLE-ENDIAN --> endianTamImagen
 				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-		int contadorSubIndice = 0;
-		for (int i = 0; i < defecto.length; i++) {
-			if (i >= INDICE_TAM_FICHERO && i <= INDICE_TAM_FICHERO + 3) {
-				if (contadorSubIndice < 4) {
-					defecto[i] = endianTamFichero[contadorSubIndice];
-					contadorSubIndice++;
-				}
-				if (contadorSubIndice == 4)
-					contadorSubIndice = 0;
-			} else if (i >= INDICE_ANCHO && i <= INDICE_ANCHO + 3) {
-				if (contadorSubIndice < 4) {
-					defecto[i] = endianDimensionesImagen[contadorSubIndice];
-					contadorSubIndice++;
-				}
-				if (contadorSubIndice == 4)
-					contadorSubIndice = 0;
-			} else if (i >= INDICE_ALTO && i <= INDICE_ALTO + 3) {
-				if (contadorSubIndice < 4) {
-					defecto[i] = endianDimensionesImagen[contadorSubIndice];
-					contadorSubIndice++;
-				}
-				if (contadorSubIndice == 4)
-					contadorSubIndice = 0;
-			} else if (i >= INDICE_TAM_IMAGEN && i <= INDICE_TAM_IMAGEN + 3) {
-				if (contadorSubIndice < 4) {
-					defecto[i] = endianTamImagen[contadorSubIndice];
-					contadorSubIndice++;
-				}
-				if (contadorSubIndice == 4)
-					contadorSubIndice = 0;
-			}
+		// Insertar valores little-endian en los índices correspondientes
+		// file size
+		for (int i = 0; i < 4; i++)
+			defecto[INDICE_TAM_FICHERO + i] = endianTamFichero[i];
+		// width (INDICE_ANCHO)
+		for (int i = 0; i < 4; i++)
+			defecto[INDICE_ANCHO + i] = endianDimensionesImagen[i];
+		// height (INDICE_ALTO)
+		for (int i = 0; i < 4; i++)
+			defecto[INDICE_ALTO + i] = endianDimensionesImagen[i];
+		// image size (INDICE_TAM_IMAGEN)
+		for (int i = 0; i < 4; i++)
+			defecto[INDICE_TAM_IMAGEN + i] = endianTamImagen[i];
 
-		}
-		return defecto.clone();
+		return defecto;
 	}
 
 	public void crearImagen() {
-		// QUITAR ESTOS SYSOS CUANDO SE TERMINE
-		System.out.println("bytesPadding: " + bytesPadding);
-		System.out.println("Dimension parcial: " + tamFila);
+		System.out.println("Dimension imagen: " + tamImagen + " px");
 		imagen = new byte[tamFichero];
 
 		for (int i = 0; i < CABECERA_POR_DEFECTO; i++) {
@@ -156,28 +136,44 @@ public class ImagenBMP {
 		// imagen y el max para evitar valores negativos insertados por el usuario
 		int size = Math.max(0, Math.min(dimensionesCuadrado, dimensionesImagen));
 		int inicio = (dimensionesImagen - size) / 2;
-		int end = inicio + size-1;
+		int fin = inicio + size - 1;
+
+		Scanner sc = new Scanner(System.in);
+		System.out.print("Introduce el grosor del borde (px): ");
+		int grosorBorde = sc.nextInt();
+		// Agregamos verificaciones para que el borde del cuadrado no afecte a la imagen
+		if (grosorBorde < 1) {
+			grosorBorde = 1;
+		}
+		if (grosorBorde > size / 2) {
+			grosorBorde = size / 2;
+		}
 
 		// REcorremos las filas y columnas. En el caso de los bmp se recorren de abajo a
 		// arriba.
 		for (int row = 0; row < dimensionesImagen; row++) {
-			int inicioFila = CABECERA_POR_DEFECTO + row * tamFila;
+			int filaInvertida = dimensionesImagen - 1 - row;
+			int inicioFila = CABECERA_POR_DEFECTO + filaInvertida * tamFila;
+
 			for (int col = 0; col < dimensionesImagen; col++) {
 				int inicioPixel = inicioFila + col * 3;
-				// Variable booleana para determinar si estamos dentro del cuadrado interior o
-				// no
-				boolean dentro = (col >= inicio && col <= end && row >= inicio && row <= end);
-				byte[] color = dentro ? colorCuadrado : colorFondo;
-				// Ordenamos el color en BGR aunque luego los pidamos RGB
-				imagen[inicioPixel] = color[0];
-				imagen[inicioPixel + 1] = color[1];
-				imagen[inicioPixel + 2] = color[2];
+
+				boolean dentroCuadrado = (col >= inicio && col <= fin && row >= inicio && row <= fin);
+				boolean esBorde = (dentroCuadrado && (row < inicio + grosorBorde || row > fin - grosorBorde
+						|| col < inicio + grosorBorde || col > fin - grosorBorde));
+
+				byte[] color = esBorde ? colorCuadrado : colorFondo;
+
+				imagen[inicioPixel] = color[0]; // Esto va a ser la B de RGB
+				imagen[inicioPixel + 1] = color[1]; // Esto va a ser la G de RGB
+				imagen[inicioPixel + 2] = color[2]; // Esto va a ser la R de RGB
 			}
-			// Bytes de padding al final de la fila en caso de que haya
+
+			// padding al final de la fila
 			int inicioPadding = inicioFila + 3 * dimensionesImagen;
 			int paddingFinal = inicioFila + tamFila;
 			for (int i = inicioPadding; i < paddingFinal; i++) {
-				imagen[i] = (byte) 0;
+				imagen[i] = 0;
 			}
 		}
 	}
@@ -197,8 +193,10 @@ public class ImagenBMP {
 		return conversor.array();
 	}
 
+	// Creamos un método para pedir los colores del fondo y del cuadrado interior
 	private byte[] pedirColoresRGB() {
 		Scanner sc = new Scanner(System.in);
+		// Como es en formato RGB necesitamos un array de 3 bytes
 		byte[] colores = new byte[3];
 
 		try {
@@ -210,22 +208,24 @@ public class ImagenBMP {
 			System.out.print("B(0-255): ");
 			int b = sc.nextInt();
 
+			// Si los valores salen de rango lanzamos una excepción
 			if (r > 255 || r < 0 || b > 255 || b < 0 || g > 255 || g < 0) {
 				throw new IllegalArgumentException("Los valores no están en los rangos correctos");
 			}
-
+			// Para pintar un archivo BMP necesitamos darle los colores RGB en formato BGR
 			colores[0] = (byte) b;
 			colores[1] = (byte) g;
 			colores[2] = (byte) r;
 
+			// Si se introduce algo mal se usará de manera predeterminada el color negro
 		} catch (Exception e) {
 			System.out.println("Error, el formato no es correcto " + e.getMessage());
-			System.err.println("Se va a usar un color por defecto (ESTO SE DEBE CAMBIAR)");
+			System.err.println("Se va a usar un color por defecto");
 			colores[0] = 0;
 			colores[1] = 0;
 			colores[2] = 0;
 		}
-
+		// Devolvemos el array de colores
 		return colores;
 
 	}
