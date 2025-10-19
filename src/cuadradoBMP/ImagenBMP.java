@@ -52,13 +52,6 @@ public class ImagenBMP {
 		this.colorFondo = pedirColoresRGB();
 		System.out.println("Indica el color de LA figura para el .BMP:");
 		this.colorCuadrado = pedirColoresRGB();
-//		this.colorFondo = colorFondo.clone();
-//		this.colorCuadrado = colorCuadrado.clone();
-		// Las siguientes fórmulas están sacadas de internet investigando que, si el
-		// tamaño de la fila NO es múltiplo de 4, se necesitarán añadir bytes extras
-		// como padding.
-		// LO HE CORREGIDO, ANTES USÁBAMOS 4 PERO POR LO VISTO CON 3 ASEGURAS QUE SEA
-		// MÚLTIPLO DE 4 Y EVITAS POSIBLES REDONDEOS O CÁLCULOS ERRÓNEOS
 		tamFila = (3 * dimensionesImagen + 3) & ~3;
 		bytesPadding = tamFila - 3 * dimensionesImagen;
 
@@ -71,26 +64,27 @@ public class ImagenBMP {
 		endianTamImagen = littleEndian(tamImagen);
 		endianTamFichero = littleEndian(tamFichero);
 
+		// Llamamos al método para crear la estructura del BMP
 		imagenPorDefecto = crearImagenInicial();
 
+		// Creamos el fichero con la extensión .bmp
 		fichero = new File(this.nombre + ".bmp");
 	}
 
 	public void crearFicherBMP() throws IOException {
+		// Si no existe se crea el archivo
 		if (!fichero.exists())
 			fichero.createNewFile();
 		ficheroEscritura = new FileOutputStream(fichero);
+		// Creamos un bufferedoutputStream para mayor eficiencia al escribir mucho
+		// contenido. Escribimos y cerramos recursos
 		bufferEscritura = new BufferedOutputStream(ficheroEscritura);
 		bufferEscritura.write(imagen);
-		// ESTE BUCLE ESTÁ HECHO PARA VER EL ARRAY QUE SE VA A INSCRIBIR DENTRO DEL
-		// ARCHIVO
-//		// UTILIZARLO COMO GUÍA Y CUANDO SEA DEFINITIVO EL CÓDIGO, QUITARLO
-//		for (int i = 0; i < imagen.length; i++)
-//			System.out.println(i + ": " + imagen[i]);
-		bufferEscritura.flush();
+		cerrarRecursos();
 		System.out.println("Se ha creado con éxito");
 	}
 
+	// Creamos un método para cerrar los recursos
 	public void cerrarRecursos() throws IOException {
 		bufferEscritura.close();
 		ficheroEscritura.close();
@@ -125,11 +119,17 @@ public class ImagenBMP {
 	}
 
 	public void crearImagen() {
-		// QUITAR ESTOS SYSOS CUANDO SE TERMINE
-		System.out.println("Dimension imagen: " + tamImagen);
+		System.out.println("Dimension imagen: " + tamImagen + " px");
 		imagen = new byte[tamFichero];
 
-		System.arraycopy(imagenPorDefecto, 0, imagen, 0, CABECERA_POR_DEFECTO);
+		for (int i = 0; i < CABECERA_POR_DEFECTO; i++) {
+			// Por si imagenPorDefecto fuera más pequeño
+			if (i < imagenPorDefecto.length) {
+				imagen[i] = imagenPorDefecto[i];
+			} else {
+				imagen[i] = 0;
+			}
+		}
 
 		// Calculamos la posición del cuadrado interior
 		// Utilizamos Math.in() para asegurarnos de que el tamaño no sea mayor que la
@@ -141,6 +141,7 @@ public class ImagenBMP {
 		Scanner sc = new Scanner(System.in);
 		System.out.print("Introduce el grosor del borde (px): ");
 		int grosorBorde = sc.nextInt();
+		// Agregamos verificaciones para que el borde del cuadrado no afecte a la imagen
 		if (grosorBorde < 1) {
 			grosorBorde = 1;
 		}
@@ -163,9 +164,9 @@ public class ImagenBMP {
 
 				byte[] color = esBorde ? colorCuadrado : colorFondo;
 
-				imagen[inicioPixel] = color[0]; // B
-				imagen[inicioPixel + 1] = color[1]; // G
-				imagen[inicioPixel + 2] = color[2]; // R
+				imagen[inicioPixel] = color[0]; // Esto va a ser la B de RGB
+				imagen[inicioPixel + 1] = color[1]; // Esto va a ser la G de RGB
+				imagen[inicioPixel + 2] = color[2]; // Esto va a ser la R de RGB
 			}
 
 			// padding al final de la fila
@@ -192,8 +193,10 @@ public class ImagenBMP {
 		return conversor.array();
 	}
 
+	// Creamos un método para pedir los colores del fondo y del cuadrado interior
 	private byte[] pedirColoresRGB() {
 		Scanner sc = new Scanner(System.in);
+		// Como es en formato RGB necesitamos un array de 3 bytes
 		byte[] colores = new byte[3];
 
 		try {
@@ -205,22 +208,24 @@ public class ImagenBMP {
 			System.out.print("B(0-255): ");
 			int b = sc.nextInt();
 
+			// Si los valores salen de rango lanzamos una excepción
 			if (r > 255 || r < 0 || b > 255 || b < 0 || g > 255 || g < 0) {
 				throw new IllegalArgumentException("Los valores no están en los rangos correctos");
 			}
-
+			// Para pintar un archivo BMP necesitamos darle los colores RGB en formato BGR
 			colores[0] = (byte) b;
 			colores[1] = (byte) g;
 			colores[2] = (byte) r;
 
+			// Si se introduce algo mal se usará de manera predeterminada el color negro
 		} catch (Exception e) {
 			System.out.println("Error, el formato no es correcto " + e.getMessage());
-			System.err.println("Se va a usar un color por defecto (ESTO SE DEBE CAMBIAR)");
+			System.err.println("Se va a usar un color por defecto");
 			colores[0] = 0;
 			colores[1] = 0;
 			colores[2] = 0;
 		}
-
+		// Devolvemos el array de colores
 		return colores;
 
 	}
