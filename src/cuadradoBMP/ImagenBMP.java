@@ -57,15 +57,22 @@ public class ImagenBMP {
 		// Las siguientes fórmulas están sacadas de internet investigando que, si el
 		// tamaño de la fila NO es múltiplo de 4, se necesitarán añadir bytes extras
 		// como padding.
-		bytesPadding = (4 - (3 * this.dimensionesImagen % 4)) % 4;
-		tamFila = ((3 * this.dimensionesImagen + 3) / 4) * 4;
-		endianDimensionesImagen = littleEndian(this.dimensionesCuadrado).clone();
+		// LO HE CORREGIDO, ANTES USÁBAMOS 4 PERO POR LO VISTO CON 3 ASEGURAS QUE SEA
+		// MÚLTIPLO DE 4 Y EVITAS POSIBLES REDONDEOS O CÁLCULOS ERRÓNEOS
+		tamFila = (3 * dimensionesImagen + 3) & ~3;
+		bytesPadding = tamFila - 3 * dimensionesImagen;
+
+		// tamaños
 		tamImagen = tamFila * this.dimensionesImagen;
-		endianTamImagen = littleEndian(tamImagen).clone();
 		tamFichero = CABECERA_POR_DEFECTO + tamImagen;
-		endianTamFichero = littleEndian(tamFichero).clone();
-		imagenPorDefecto = crearImagenInicial(); // Creamos la cabecera
-		// crearImagen(); // Definimos el array que definirá la iamgen
+
+		// endian arrays
+		endianDimensionesImagen = littleEndian(this.dimensionesImagen);
+		endianTamImagen = littleEndian(tamImagen);
+		endianTamFichero = littleEndian(tamFichero);
+
+		imagenPorDefecto = crearImagenInicial();
+
 		fichero = new File(this.nombre + ".bmp");
 	}
 
@@ -100,84 +107,72 @@ public class ImagenBMP {
 				1, 0, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, // --> MIRAR CONVERSIÓN LITTLE-ENDIAN --> endianTamImagen
 				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-		int contadorSubIndice = 0;
-		for (int i = 0; i < defecto.length; i++) {
-			if (i >= INDICE_TAM_FICHERO && i <= INDICE_TAM_FICHERO + 3) {
-				if (contadorSubIndice < 4) {
-					defecto[i] = endianTamFichero[contadorSubIndice];
-					contadorSubIndice++;
-				}
-				if (contadorSubIndice == 4)
-					contadorSubIndice = 0;
-			} else if (i >= INDICE_ANCHO && i <= INDICE_ANCHO + 3) {
-				if (contadorSubIndice < 4) {
-					defecto[i] = endianDimensionesImagen[contadorSubIndice];
-					contadorSubIndice++;
-				}
-				if (contadorSubIndice == 4)
-					contadorSubIndice = 0;
-			} else if (i >= INDICE_ALTO && i <= INDICE_ALTO + 3) {
-				if (contadorSubIndice < 4) {
-					defecto[i] = endianDimensionesImagen[contadorSubIndice];
-					contadorSubIndice++;
-				}
-				if (contadorSubIndice == 4)
-					contadorSubIndice = 0;
-			} else if (i >= INDICE_TAM_IMAGEN && i <= INDICE_TAM_IMAGEN + 3) {
-				if (contadorSubIndice < 4) {
-					defecto[i] = endianTamImagen[contadorSubIndice];
-					contadorSubIndice++;
-				}
-				if (contadorSubIndice == 4)
-					contadorSubIndice = 0;
-			}
+		// Insertar valores little-endian en los índices correspondientes
+		// file size
+		for (int i = 0; i < 4; i++)
+			defecto[INDICE_TAM_FICHERO + i] = endianTamFichero[i];
+		// width (INDICE_ANCHO)
+		for (int i = 0; i < 4; i++)
+			defecto[INDICE_ANCHO + i] = endianDimensionesImagen[i];
+		// height (INDICE_ALTO)
+		for (int i = 0; i < 4; i++)
+			defecto[INDICE_ALTO + i] = endianDimensionesImagen[i];
+		// image size (INDICE_TAM_IMAGEN)
+		for (int i = 0; i < 4; i++)
+			defecto[INDICE_TAM_IMAGEN + i] = endianTamImagen[i];
 
-		}
-		return defecto.clone();
+		return defecto;
 	}
 
 	public void crearImagen() {
 		// QUITAR ESTOS SYSOS CUANDO SE TERMINE
-		System.out.println("bytesPadding: " + bytesPadding);
-		System.out.println("Dimension parcial: " + tamFila);
+		System.out.println("Dimension imagen: " + tamImagen);
 		imagen = new byte[tamFichero];
 
-		for (int i = 0; i < CABECERA_POR_DEFECTO; i++) {
-			// Por si imagenPorDefecto fuera más pequeño
-			if (i < imagenPorDefecto.length) {
-				imagen[i] = imagenPorDefecto[i];
-			} else {
-				imagen[i] = 0;
-			}
-		}
+		System.arraycopy(imagenPorDefecto, 0, imagen, 0, CABECERA_POR_DEFECTO);
 
 		// Calculamos la posición del cuadrado interior
 		// Utilizamos Math.in() para asegurarnos de que el tamaño no sea mayor que la
 		// imagen y el max para evitar valores negativos insertados por el usuario
 		int size = Math.max(0, Math.min(dimensionesCuadrado, dimensionesImagen));
 		int inicio = (dimensionesImagen - size) / 2;
-		int end = inicio + size-1;
+		int fin = inicio + size - 1;
+
+		Scanner sc = new Scanner(System.in);
+		System.out.print("Introduce el grosor del borde (px): ");
+		int grosorBorde = sc.nextInt();
+		if (grosorBorde < 1) {
+			grosorBorde = 1;
+		}
+		if (grosorBorde > size / 2) {
+			grosorBorde = size / 2;
+		}
 
 		// REcorremos las filas y columnas. En el caso de los bmp se recorren de abajo a
 		// arriba.
 		for (int row = 0; row < dimensionesImagen; row++) {
-			int inicioFila = CABECERA_POR_DEFECTO + row * tamFila;
+			int filaInvertida = dimensionesImagen - 1 - row;
+			int inicioFila = CABECERA_POR_DEFECTO + filaInvertida * tamFila;
+
 			for (int col = 0; col < dimensionesImagen; col++) {
 				int inicioPixel = inicioFila + col * 3;
-				// Variable booleana para determinar si estamos dentro del cuadrado interior o
-				// no
-				boolean dentro = (col >= inicio && col <= end && row >= inicio && row <= end);
-				byte[] color = dentro ? colorCuadrado : colorFondo;
-				// Ordenamos el color en BGR aunque luego los pidamos RGB
-				imagen[inicioPixel] = color[0];
-				imagen[inicioPixel + 1] = color[1];
-				imagen[inicioPixel + 2] = color[2];
+
+				boolean dentroCuadrado = (col >= inicio && col <= fin && row >= inicio && row <= fin);
+				boolean esBorde = (dentroCuadrado && (row < inicio + grosorBorde || row > fin - grosorBorde
+						|| col < inicio + grosorBorde || col > fin - grosorBorde));
+
+				byte[] color = esBorde ? colorCuadrado : colorFondo;
+
+				imagen[inicioPixel] = color[0]; // B
+				imagen[inicioPixel + 1] = color[1]; // G
+				imagen[inicioPixel + 2] = color[2]; // R
 			}
-			// Bytes de padding al final de la fila en caso de que haya
+
+			// padding al final de la fila
 			int inicioPadding = inicioFila + 3 * dimensionesImagen;
 			int paddingFinal = inicioFila + tamFila;
 			for (int i = inicioPadding; i < paddingFinal; i++) {
-				imagen[i] = (byte) 0;
+				imagen[i] = 0;
 			}
 		}
 	}
